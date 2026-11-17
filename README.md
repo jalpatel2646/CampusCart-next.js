@@ -1,29 +1,51 @@
 ﻿# CampusCart
 
-CampusCart is a student marketplace for buying, selling, giving away, and swapping
-second-hand textbooks, electronics, furniture, and hostel essentials. Listings,
-enquiries, offers, and favourites are stored in MongoDB and served through the
-Next.js App Router.
+A student marketplace for buying, selling, giving away, and swapping second-hand
+textbooks, electronics, furniture, and hostel essentials — listings, enquiries,
+offers, favourites, notifications, and saved searches are all backed by
+MongoDB and served by the Next.js App Router.
+
+## What it is
+
+CampusCart connects students on campus who want to offload books, calculators,
+and furniture with students who need the same — at student-friendly prices. It
+covers the whole loop a student runs through:
+
+1. **Publish** — post an item with photos and a price (or mark it Free or
+   Exchange), optionally let AI generate the description or suggest a category.
+2. **Discover** — browse the marketplace, search and filter by category,
+   condition, price, or pickup location, sort results, and page through them.
+3. **Contact** — send an enquiry with an optional offer, or tap the seller's
+   contact preference directly from the listing page.
+4. **Negotiate** — the seller accepts, rejects, or closes the enquiry and can
+   add a response note; or the buyer makes an offer which the seller accepts
+   or rejects.
+5. **Save and manage** — the buyer saves interesting listings to favourites;
+   both sides manage everything from the seller dashboard or the buyer
+   inbox at `/enquiries`.
 
 ## Features
 
 - Browse, search, filter, sort, and paginate live listings, including a
   pickup-location facet (hostels, library, sports complex) discovered from live
   listings.
-- Email/password accounts with hashed passwords and signed session cookies.
-- Product pages with photo gallery, seller contact details, similar listings, and
-  working favourite and enquiry forms.
-- Create and edit listings with validated fields and Cloudinary photo uploads.
-- Optional AI assist in the listing form: generate a short description and suggest
-  a category, powered by OpenRouter (auto-disabled when no key is configured).
-- Seller dashboard with listing status (available, reserved, sold), deactivation,
-  reactivation, deletion, enquiries, and price offers.
+- Email/password accounts with hashed passwords (scrypt) and signed session
+  cookies.
+- Product pages with photo gallery, seller contact details, similar listings,
+  and working favourite and enquiry forms.
+- Create and edit listings with validated fields and up-to-5-image Cloudinary
+  uploads.
+- Optional AI assist in the listing form (generate description, suggest
+  category) via OpenRouter; auto-disabled without a key.
+- Seller dashboard with listing status (available, reserved, sold),
+  deactivation, reactivation, deletion, enquiries, and price offers.
 - Public seller profiles showing current listings and listing history.
 - Account-scoped saved listings.
-- Buyer inbox at `/enquiries` listing outgoing enquiries and the seller's
-  responses, with an unread badge in the navbar.
-- Notifications are delivered in-app; guest enquiries keep only the typed email
-  and can follow the listing page for updates.
+- Buyer inbox at `/enquiries` listing outgoing enquiries with the seller's
+  responses, plus unread notifications delivered in-app with a navbar badge.
+- Saved searches at `/dashboard/searches` with new-match counts.
+- QR code share control on every product page (inline SVG QR, copy link,
+  save PNG, native Web Share).
 - Privacy policy and terms pages.
 - Database-aware health endpoint at `/api/health` and generated `sitemap.xml`,
   `robots.txt`, icons, and Open Graph image.
@@ -39,48 +61,89 @@ Next.js App Router.
 - Cloudinary for listing photos
 - Lucide icons and Sonner toasts
 
-## Prerequisites
+## Project layout
 
-- Node.js 20.9 or newer
-- npm
-- A MongoDB connection string
-- A Cloudinary account (needed only for photo uploads)
+```
+src/
+  app/                 App Router pages (see Pages below)
+    api/               API route handlers (see API routes below)
+  components/          UI components, grouped by feature
+    common/            Button, Input, Modal, Badge, EmptyState, Skeleton, …
+    dashboard/         Dashboard-specific pieces (ListingActions, EnquiryList…)
+    home/              Home page sections (hero, stats, features…)
+    layout/            Navbar, SiteHeader, Footer, PageContainer
+    listings/          ListingForm, ImageUploader
+    marketplace/       ListingCard, MarketplaceBrowser, EnquiryForm, …
+    notifications/     MarkAllSeenOnMount
+  lib/                 Shared helpers (mongodb, session, api client, validators,
+                       ownership, errors, validation schemas)
+    validation/        Client-side zod schemas used by the forms
+  models/              Mongoose models (listing, enquiry, favorite, seller,
+                       saved-search, notification)
+  services/            Service layer used by route handlers
+    listing.service.js, enquiry.service.js, assist.service.js, …
+  config/site.js       Site-wide config (name, URL, repository, issues link)
+```
 
-## Setup
+## Pages
 
-1. Install dependencies:
+| Route | Description |
+| --- | --- |
+| `/` | Home — featured listings, categories, free/swap picks, stats |
+| `/marketplace` | Browse, search, filter, sort, paginate; share/discover listings |
+| `/product/[id]` | Full listing page: gallery, price, condition, seller card, similar listings, enquiry form, QR share |
+| `/seller/[id]` | Public seller profile: contact preference, current listings, listing history |
+| `/favorites` | Listings saved to the signed-in account |
+| `/enquiries` | Buyer inbox: outgoing enquiries with status and the seller's response |
+| `/create-listing` | Post a new listing (auth required) |
+| `/edit-listing/[id]` | Edit a listing you own (auth required) |
+| `/dashboard` | Seller overview — listings by status, pending enquiries and offers |
+| `/dashboard/listings` | Manage your listings: status, edit, deactivate, delete |
+| `/dashboard/enquiries` | Seller inbox — accept, reject, close, or annotate |
+| `/dashboard/offers` | Offers-only view of enquiries with an `offerPrice` |
+| `/dashboard/searches` | Saved searches with new-match badges (beyond the original spec) |
+| `/login` / `/signup` | Account auth |
+| `/privacy` / `/terms` | Legal pages |
+| `/sitemap.xml` / `/robots.txt` | SEO |
 
-   ```bash
-   npm install
-   ```
+## API routes
 
-2. Copy the environment template and fill in the values:
+| Route | Methods | Notes |
+| --- | --- | --- |
+| `/api/health` | `GET` | Reports API and database status |
+| `/api/auth/signup` | `POST` | Create an account and start a session |
+| `/api/auth/login` | `POST` | Sign in with email and password |
+| `/api/auth/logout` | `POST` | End the current session |
+| `/api/auth/me` | `GET` | Current account, or `null` when signed out |
+| `/api/listings` | `GET`, `POST` | Search/filter listings; create a listing for the signed-in account |
+| `/api/listings/[id]` | `GET`, `PUT`, `DELETE` | Detail, owner edit, owner delete |
+| `/api/listings/[id]/status` | `PATCH` | Change availability (Available / Reserved / Sold) |
+| `/api/listings/[id]/deactivate` | `PATCH` | Hide a listing without deleting it |
+| `/api/listings/[id]/reactivate` | `PATCH` | Restore a hidden listing |
+| `/api/listings/[id]/similar` | `GET` | Similar listings in the same category |
+| `/api/listings/assist` | `POST` | AI assist for the listing form (`describe` / `classify`); signed-in accounts only |
+| `/api/enquiries` | `GET`, `POST` | Seller inbox; create an enquiry or offer. `GET ?sent=true` returns the signed-in buyer's outgoing enquiries |
+| `/api/enquiries/[id]` | `PATCH` | Accept, reject, close, or annotate an enquiry |
+| `/api/notifications` | `GET` | Notification inbox and unread count for the signed-in account |
+| `/api/notifications/[id]/seen` | `POST` | Mark one notification read |
+| `/api/notifications/seen` | `POST` | Mark all notifications read |
+| `/api/favorites` | `GET`, `POST` | List or add saved listings for the signed-in account |
+| `/api/favorites/[listingId]` | `GET`, `DELETE` | Check or remove a saved listing |
+| `/api/dashboard` | `GET` | Seller dashboard snapshot |
+| `/api/uploads` | `POST` | Upload up to five images to Cloudinary |
+| `/api/saved-searches` | `GET`, `POST` | Manage saved searches for the signed-in account |
+| `/api/saved-searches/[id]` | `DELETE` | Remove a saved search |
+| `/api/saved-searches/[id]/seen` | `POST` | Mark one saved search as seen (resets the new-matches badge) |
+| `/api/saved-searches/seen` | `POST` | Mark all saved searches as seen |
 
-   ```bash
-   cp .env.example .env.local
-   ```
-
-3. Generate a session secret:
-
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
-   ```
-
-4. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   Open <http://localhost:3000>, create an account, and publish your first
-   listing. There is no sample data: everything in the database comes from real
-   users creating listings through the app.
+All mutations validate input on the server. Errors return
+`{ success: false, message, code, errors? }` with an appropriate status code.
 
 ## Environment variables
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `NEXT_PUBLIC_APP_URL` | Yes | Public origin used for canonical URLs, the sitemap, and robots file. Use `http://localhost:3000` locally and the full HTTPS origin in production. |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public origin used for canonical URLs, the sitemap, and robots file. `http://localhost:3000` locally, the real origin in production. |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | No | Optional public support address. When empty, contact links point to the GitHub issue tracker. |
 | `SESSION_SECRET` | Yes in production | Signs the session cookies and protects account sessions. The app refuses to start without it in production. |
 | `MONGODB_URI` | Yes | MongoDB Atlas or local connection string. |
@@ -89,7 +152,7 @@ Next.js App Router.
 | `CLOUDINARY_API_KEY` | For uploads | Cloudinary API key. |
 | `CLOUDINARY_API_SECRET` | For uploads | Cloudinary API secret. |
 | `OPENROUTER_API_KEY` | Optional | Enables the AI assist buttons in the listing form (generate description, suggest category). |
-| `OPENROUTER_MODEL` | Optional | OpenRouter model id; defaults to `baidu/ernie-5.5-flash-preview:free`, or set `openai/gpt-4o-mini` for higher reliability. |
+| `OPENROUTER_MODEL` | Optional | OpenRouter model id; defaults to `baidu/ernie-5.5-flash-preview:free`. |
 
 Without Cloudinary credentials the site still works, but photo uploads return a
 `503` with a clear message instead of silently failing.
@@ -105,34 +168,6 @@ Never commit `.env.local` or any real credentials.
 | `npm run start` | Serve the production build. |
 | `npm run lint` | Run ESLint. |
 
-## API overview
-
-| Route | Methods | Notes |
-| --- | --- | --- |
-| `/api/health` | `GET` | Reports API and database status. |
-| `/api/auth/signup` | `POST` | Create an account and start a session. |
-| `/api/auth/login` | `POST` | Sign in with email and password. |
-| `/api/auth/logout` | `POST` | End the current session. |
-| `/api/auth/me` | `GET` | Current account, or `null` when signed out. |
-| `/api/listings` | `GET`, `POST` | Search/filter listings; create a listing for the signed-in account. |
-| `/api/listings/[id]` | `GET`, `PUT`, `DELETE` | Detail, owner edit, owner delete. |
-| `/api/listings/[id]/status` | `PATCH` | Change availability. |
-| `/api/listings/[id]/deactivate` | `PATCH` | Hide a listing without deleting it. |
-| `/api/listings/[id]/reactivate` | `PATCH` | Restore a hidden listing. |
-| `/api/enquiries` | `GET`, `POST` | Seller inbox; create an enquiry or offer. `GET ?sent=true` returns the signed-in buyer's outgoing enquiries. |
-| `/api/enquiries/[id]` | `PATCH` | Accept, reject, close, or annotate an enquiry. |
-| `/api/notifications` | `GET` | Notification inbox and unread count for the signed-in account. |
-| `/api/notifications/[id]/seen` | `POST` | Mark one notification read. |
-| `/api/notifications/seen` | `POST` | Mark all notifications read. |
-| `/api/favorites` | `GET`, `POST` | List or add saved listings for the signed-in account. |
-| `/api/favorites/[listingId]` | `GET`, `DELETE` | Check or remove a saved listing. |
-| `/api/dashboard` | `GET` | Seller dashboard snapshot. |
-| `/api/uploads` | `POST` | Upload up to five images to Cloudinary. |
-| `/api/listings/assist` | `POST` | AI assist for the listing form (`describe` / `classify`); signed-in accounts only. |
-
-All mutations validate input on the server. Errors return
-`{ success: false, message, code, errors? }` with an appropriate status code.
-
 ## How accounts work
 
 - Signing up hashes the password with scrypt (`node:crypto`, no plain-text
@@ -144,37 +179,6 @@ All mutations validate input on the server. Errors return
 - Listings and sellers are never pre-seeded. The marketplace only contains
   listings real users have published.
 
-## Deployment
-
-### Vercel (recommended)
-
-1. Create a MongoDB Atlas database, add the deployment's outbound IPs to the
-   access list (or allow `0.0.0.0/0` if the host has no fixed egress IPs), and
-   copy the connection string.
-2. Create a Cloudinary account and copy the cloud name, API key, and API secret.
-3. Import the repository into Vercel. Keep the detected Next.js settings; the
-   build command stays `npm run build`.
-4. Add every variable from `.env.example` to the project's Production
-   environment (and Preview if you use preview deployments). Set
-   `NEXT_PUBLIC_APP_URL` to the final HTTPS origin and generate a strong
-   `SESSION_SECRET`.
-5. Deploy and open `/api/health`. It should report `"database": "connected"`.
-6. In Project → Settings → Domains, add the custom domain. At the registrar,
-   create the DNS records Vercel shows (`A 76.76.21.21` for a root domain or the
-   `cname.vercel-dns.com` CNAME it provides) and wait for verification and the
-   TLS certificate.
-7. Set `NEXT_PUBLIC_APP_URL` to the custom domain, redeploy, and confirm
-   `/sitemap.xml`, `/robots.txt`, and the Open Graph image use that origin.
-
-The domain and hosting steps require access to the domain and the Vercel
-account, so they cannot be completed from inside this repository.
-
-### Self-hosted
-
-Run `npm run build` followed by `npm run start` behind an HTTPS reverse proxy,
-and provide the same environment variables. Terminate TLS at the proxy so the
-`Secure` session cookie is sent correctly.
-
 ## Known limitations
 
 - Passwords are hashed with scrypt and sessions are signed cookies. There is no
@@ -184,6 +188,7 @@ and provide the same environment variables. Terminate TLS at the proxy so the
 - Seller responses to enquiries are delivered in-app for signed-in buyers.
   Guest buyers are not notified by email; they only see the response when they
   revisit the listing or sign in to their inbox.
+- Saved searches and notifications are account-scoped and in-app only.
 - Spam limiting uses an in-memory counter; it resets when the server restarts and
   is per instance.
 - `npm audit` reports moderate issues in the ESLint toolchain. The suggested
