@@ -7,7 +7,18 @@ const POPULAR_SEARCHES = ["Textbooks", "Laptop", "Study desk", "Calculator"];
 
 const STATS_GRID = "grid grid-cols-3 gap-4";
 
-export function HeroSection({ liveCount = 0, freeCount = 0, sellerCount = 0 }) {
+function isHeroImageUrl(url) {
+  if (typeof url !== "string" || url.trim().length === 0) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+export function HeroSection({ liveCount = 0, freeCount = 0, sellerCount = 0, heroImage = null }) {
+  const showHeroImage = isHeroImageUrl(heroImage);
   const stats = [
     { value: liveCount, label: "Live listings" },
     { value: freeCount, label: "Free or swap" },
@@ -96,11 +107,12 @@ export function HeroSection({ liveCount = 0, freeCount = 0, sellerCount = 0 }) {
           </dl>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[520px]">
+        {showHeroImage && (
+          <div className="relative mx-auto w-full max-w-[520px]">
           <div className="relative aspect-4/5 w-full overflow-hidden rounded-[var(--radius-3xl)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-[var(--shadow-xl)]">
             <Image
-              src="/images/products/laptop.jpg"
-              alt="A second-hand laptop listed on CampusCart"
+              src={heroImage}
+              alt="A recently listed Second-hand item on CampusCart"
               fill
               priority
               sizes="(max-width: 1024px) 90vw, 480px"
@@ -129,7 +141,8 @@ export function HeroSection({ liveCount = 0, freeCount = 0, sellerCount = 0 }) {
             <LayoutGrid className="h-3.5 w-3.5 text-[var(--color-primary)]" aria-hidden="true" />
             {PRODUCT_CATEGORIES.length} categories to browse
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );

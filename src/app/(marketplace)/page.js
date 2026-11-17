@@ -37,6 +37,7 @@ async function HomeContent() {
         liveCount={stats.liveCount}
         freeCount={stats.freeCount}
         sellerCount={stats.sellerCount}
+        heroImage={featured[0]?.images?.[0] ?? null}
       />
 
       <CategorySection counts={categoryCounts} />
