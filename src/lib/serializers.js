@@ -40,6 +40,7 @@ export function serializeListing(listing) {
     category: source.category ?? "Other",
     condition: source.condition ?? "Used",
     images: Array.isArray(source.images) ? source.images.filter(Boolean) : [],
+    location: source.location ?? "",
     listingType: source.listingType ?? "For Sale",
     exchangeDescription: source.exchangeDescription ?? "",
     status: source.status ?? "Available",

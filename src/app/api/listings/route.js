@@ -16,6 +16,7 @@ function toFilters(searchParams) {
     search: searchParams.get("search"),
     category: searchParams.get("category"),
     condition: searchParams.getAll("condition"),
+    location: searchParams.get("location"),
     minPrice: searchParams.get("minPrice"),
     maxPrice: searchParams.get("maxPrice"),
     sort: searchParams.get("sort"),

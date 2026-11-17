@@ -7,7 +7,9 @@ Next.js App Router.
 
 ## Features
 
-- Browse, search, filter, sort, and paginate live listings.
+- Browse, search, filter, sort, and paginate live listings, including a
+  pickup-location facet (hostels, library, sports complex) discovered from live
+  listings.
 - Email/password accounts with hashed passwords and signed session cookies.
 - Product pages with photo gallery, seller contact details, similar listings, and
   working favourite and enquiry forms.

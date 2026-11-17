@@ -45,30 +45,47 @@ async function categoryCounts() {
   }, {});
 }
 
+/** Per-pickup-location counts, excluding empty locations. */
+async function locationCounts() {
+  await connectToDatabase();
+  const rows = await Listing.aggregate([
+    { $match: { isActive: true, status: { $ne: "Sold" }, location: { $ne: "", $exists: true } } },
+    { $group: { _id: "$location", count: { $sum: 1 } } },
+  ]);
+
+  return rows.reduce((counts, row) => {
+    counts[row._id] = row.count;
+    return counts;
+  }, {});
+}
+
 /** Marketplace result set plus per-category counts. */
 export async function getMarketplaceData(filters = {}) {
   "use cache";
   cacheLife("minutes");
   cacheTag(LISTINGS_TAG);
 
-  const [result, counts] = await Promise.all([
+  const [result, counts, locations] = await Promise.all([
     getListings({
       search: filters.search,
       categories: filters.categories,
       conditions: filters.conditions,
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
+      location: filters.location,
       sort: filters.sort,
       page: filters.page,
       limit: filters.limit,
     }),
     categoryCounts(),
+    locationCounts(),
   ]);
 
   return {
     ...result,
     items: result.items.map(serializeListing),
     categoryCounts: counts,
+    locationCounts: locations,
   };
 }
 

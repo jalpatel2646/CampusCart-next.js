@@ -26,6 +26,7 @@ const CREATE_FIELDS = [
   "images",
   "listingType",
   "exchangeDescription",
+  "location",
 ];
 
 const UPDATE_FIELDS = [...CREATE_FIELDS, "status", "isActive"];
@@ -134,6 +135,7 @@ export async function getListings({
   sort = "newest",
   page = 1,
   limit = DEFAULT_PAGE_SIZE,
+  location,
 } = {}) {
   await connectToDatabase();
 
@@ -164,6 +166,9 @@ export async function getListings({
     ...(condition ? [condition] : []),
   ].filter(Boolean);
   if (conditionList.length > 0) filter.condition = { $in: conditionList };
+
+  const locationFilter = String(location ?? "").trim();
+  if (locationFilter) filter.location = locationFilter;
 
   if (minPrice !== undefined && minPrice !== null && minPrice !== "") {
     const value = Number(minPrice);

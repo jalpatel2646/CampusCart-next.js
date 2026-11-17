@@ -27,7 +27,7 @@ function setOrDelete(params, key, value) {
  * Interactive marketplace shell: search, sort, and filter sidebar.
  * Filter state lives in the URL so results stay shareable and server-rendered.
  */
-export function MarketplaceBrowser({ summary, categoryCounts = {}, children }) {
+export function MarketplaceBrowser({ summary, categoryCounts = {}, locationCounts = {}, children }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -41,10 +41,12 @@ export function MarketplaceBrowser({ summary, categoryCounts = {}, children }) {
   const sort = searchParams.get("sort") ?? "newest";
   const selectedCategory = searchParams.get("category") ?? "";
   const selectedConditions = searchParams.getAll("condition");
+  const selectedLocation = searchParams.get("location") ?? "";
 
   const activeFilterCount =
     (selectedCategory ? 1 : 0) +
     selectedConditions.length +
+    (selectedLocation ? 1 : 0) +
     (searchParams.get("minPrice") ? 1 : 0) +
     (searchParams.get("maxPrice") ? 1 : 0);
 
@@ -70,6 +72,7 @@ export function MarketplaceBrowser({ summary, categoryCounts = {}, children }) {
     const data = new FormData(event.currentTarget);
     const category = String(data.get("category") ?? "");
     const conditions = data.getAll("condition").map(String);
+    const location = String(data.get("location") ?? "").trim();
     const minPrice = String(data.get("minPrice") ?? "").trim();
     const maxPrice = String(data.get("maxPrice") ?? "").trim();
 
@@ -77,6 +80,7 @@ export function MarketplaceBrowser({ summary, categoryCounts = {}, children }) {
       setOrDelete(params, "category", category);
       params.delete("condition");
       conditions.forEach((condition) => params.append("condition", condition));
+      setOrDelete(params, "location", location);
       setOrDelete(params, "minPrice", minPrice);
       setOrDelete(params, "maxPrice", maxPrice);
     });
@@ -218,6 +222,43 @@ export function MarketplaceBrowser({ summary, categoryCounts = {}, children }) {
                     </span>
                   </div>
                 ))}
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                Pickup location
+              </legend>
+              <div className="mt-3 space-y-2.5">
+                <Radio
+                  name="location"
+                  value=""
+                  label="All locations"
+                  defaultChecked={selectedLocation === ""}
+                />
+                {Object.entries(locationCounts)
+                  .sort(([, countA], [, countB]) => countB - countA)
+                  .map(([location, count]) => (
+                    <div
+                      key={location}
+                      className="flex items-center justify-between gap-2"
+                    >
+                      <Radio
+                        name="location"
+                        value={location}
+                        label={location}
+                        defaultChecked={selectedLocation === location}
+                      />
+                      <span className="text-xs tabular-nums text-[var(--color-text-muted)]">
+                        {count}
+                      </span>
+                    </div>
+                  ))}
+                {Object.keys(locationCounts).length === 0 && (
+                  <p className="text-xs text-[var(--color-text-muted)]">
+                    No pickup locations listed yet.
+                  </p>
+                )}
               </div>
             </fieldset>
 

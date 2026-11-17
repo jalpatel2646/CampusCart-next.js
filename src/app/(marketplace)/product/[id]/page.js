@@ -141,6 +141,16 @@ async function ProductDetails({ initialData }) {
               </dt>
               <dd className="mt-1 font-medium text-[var(--color-text-primary)]">{listing.status}</dd>
             </div>
+            {listing.location && (
+              <div>
+                <dt className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
+                  Pickup location
+                </dt>
+                <dd className="mt-1 font-medium text-[var(--color-text-primary)]">
+                  {listing.location}
+                </dd>
+              </div>
+            )}
           </dl>
 
           <SellerCard seller={listing.seller} />

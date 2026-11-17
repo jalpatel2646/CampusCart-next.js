@@ -100,6 +100,12 @@ const listingSchema = new Schema(
         message: "Listing type must be one of: For Sale, Free, Exchange",
       },
     },
+    location: {
+      type: String,
+      trim: true,
+      maxlength: [80, "Location must be at most 80 characters"],
+      default: "",
+    },
     exchangeDescription: {
       type: String,
       trim: true,
@@ -182,6 +188,7 @@ listingSchema.index(
 listingSchema.index({ isActive: 1, status: 1, createdAt: -1 }, { name: "listing_discovery" });
 listingSchema.index({ category: 1, status: 1, price: 1 }, { name: "listing_category_price" });
 listingSchema.index({ seller: 1, createdAt: -1 }, { name: "listing_seller_recent" });
+listingSchema.index({ location: 1 }, { name: "listing_location_lookup", sparse: true });
 
 export const Listing =
   mongoose.models.Listing || mongoose.model("Listing", listingSchema);

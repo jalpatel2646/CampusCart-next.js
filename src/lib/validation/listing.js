@@ -32,6 +32,7 @@ export const listingFormSchema = z
       .min(0, "Price cannot be negative")
       .max(10000000, "Price is unrealistically high"),
     exchangeDescription: optionalText(500, "Exchange details must be at most 500 characters"),
+    location: optionalText(80, "Location must be at most 80 characters"),
     images: z
       .array(z.string())
       .min(1, "Add at least one image")
@@ -66,6 +67,7 @@ export const EMPTY_LISTING_FORM = {
   listingType: "For Sale",
   price: "",
   exchangeDescription: "",
+  location: "",
   images: [],
 };
 
@@ -79,6 +81,7 @@ export function listingToFormValues(listing) {
     listingType: listing.listingType ?? "For Sale",
     price: listing.price ?? "",
     exchangeDescription: listing.exchangeDescription ?? "",
+    location: listing.location ?? "",
     images: listing.images ?? [],
   };
 }
@@ -96,6 +99,7 @@ export function toListingPayload(values) {
     price: isForSale ? Number(values.price) : 0,
     exchangeDescription:
       values.listingType === "Exchange" ? (values.exchangeDescription ?? "").trim() : "",
+    location: (values.location ?? "").trim(),
     images: values.images,
   };
 }

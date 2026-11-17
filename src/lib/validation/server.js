@@ -42,6 +42,10 @@ const listingFields = {
   category: z.enum(PRODUCT_CATEGORIES, { message: "Choose a valid category" }),
   condition: z.enum(PRODUCT_CONDITIONS, { message: "Choose a valid condition" }),
   listingType: z.enum(LISTING_TYPES, { message: "Choose a valid listing type" }),
+  location: optionalText(
+    80,
+    "Location must be at most 80 characters"
+  ),
   price: z.coerce
     .number({ message: "Enter a valid price" })
     .min(0, "Price cannot be negative")

@@ -60,7 +60,11 @@ async function MarketplaceResults({ searchParams }) {
         : `${listingCount(result.total)} found`;
 
   return (
-    <MarketplaceBrowser summary={summary} categoryCounts={categoryCounts}>
+    <MarketplaceBrowser
+      summary={summary}
+      categoryCounts={categoryCounts}
+      locationCounts={result.locationCounts}
+    >
       {result.items.length > 0 ? (
         <>
           <ListingGrid listings={result.items} columns="three" priorityCount={3} />

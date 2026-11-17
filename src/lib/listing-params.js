@@ -43,6 +43,7 @@ export function parseListingParams(params = {}) {
     search: (first(params.search) ?? "").toString().trim().slice(0, 100),
     categories: PRODUCT_CATEGORIES.includes(category) ? [category] : [],
     conditions,
+    location: (first(params.location) ?? "").toString().trim().slice(0, 80),
     minPrice: toNumber(params.minPrice),
     maxPrice: toNumber(params.maxPrice),
     sort: LISTING_SORTS.includes(sort) ? sort : "newest",
@@ -89,6 +90,7 @@ export function hasActiveListingFilters(params = {}) {
   return Boolean(
     first(params.category) ||
       toArray(params.condition).length > 0 ||
+      first(params.location) ||
       params.minPrice !== undefined ||
       params.maxPrice !== undefined
   );

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Repeat2, UserRound } from "lucide-react";
+import { MapPin, Repeat2, UserRound } from "lucide-react";
 import { Badge } from "@/components/common/Badge";
 import { PriceDisplay } from "@/components/marketplace/PriceDisplay";
 import { ProductConditionBadge } from "@/components/marketplace/ProductConditionBadge";
@@ -70,6 +70,13 @@ export function ListingCard({ listing, priority = false, className }) {
           >
             {formatListedDate(listing.createdAt)}
           </time>
+          {listing.location ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{listing.location}</span>
+            </>
+          ) : null}
         </div>
 
         <h3 className="mt-1.5 line-clamp-2 text-[15px] font-semibold leading-snug text-[var(--color-text-primary)] transition-colors duration-150 group-hover:text-[var(--color-primary)]">

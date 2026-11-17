@@ -207,6 +207,15 @@ export function ListingForm({ mode = "create", listing = null }) {
             error={errors.exchangeDescription?.message}
           />
         )}
+
+        <Input
+          label="Pickup location (optional)"
+          placeholder="e.g. Girls Hostel, Library, Main Gate"
+          helperText="Where buyers meet you for the handoff. Leave blank for campus-wide."
+          maxLength={80}
+          {...register("location")}
+          error={errors.location?.message}
+        />
       </section>
 
       <section className={SECTION_CLASS}>
