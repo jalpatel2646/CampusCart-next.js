@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CampusCart">
+  <rect width="64" height="64" rx="14" fill="#173d32" />
+  <path
+    d="M17 24h30l-2.4 21.2A5 5 0 0 1 39.6 50H24.4a5 5 0 0 1-5-4.8L17 24Z"
+    fill="#d9f36a"
+  />
+  <path
+    d="M25 27v-6a7 7 0 0 1 14 0v6"
+    fill="none"
+    stroke="#173d32"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M27.5 33.5h9M32 29v9"
+    stroke="#173d32"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+</svg>
