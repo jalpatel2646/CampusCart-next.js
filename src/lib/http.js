@@ -37,11 +37,15 @@ export function created(data, message) {
 
 export function apiError(error) {
   if (error instanceof ServiceError) {
+    const retryAfterSeconds = error?.retryAfterSeconds;
     return Response.json(
       {
         success: false,
         message: error.message,
         ...(error.details ? { errors: error.details } : {}),
+        ...(Number.isFinite(retryAfterSeconds)
+          ? { retryAfterSeconds }
+          : {}),
         code: error.code,
       },
       { status: error.statusCode }

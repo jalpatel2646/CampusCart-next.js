@@ -31,6 +31,7 @@ export function AuthForm({ mode = "login", next }) {
   const isSignup = mode === "signup";
   const [formError, setFormError] = useState("");
   const [formDetails, setFormDetails] = useState([]);
+  const [errorCode, setErrorCode] = useState("");
 
   const {
     register,
@@ -45,6 +46,7 @@ export function AuthForm({ mode = "login", next }) {
   async function onSubmit(values) {
     setFormError("");
     setFormDetails([]);
+    setErrorCode("");
 
     try {
       if (isSignup) {
@@ -61,6 +63,7 @@ export function AuthForm({ mode = "login", next }) {
     } catch (error) {
       setFormError(error.message);
       setFormDetails(Array.isArray(error.details) ? error.details : []);
+      setErrorCode(typeof error?.code === "string" ? error.code : "");
       toast.error(isSignup ? "Could not create your account" : "Could not sign you in");
     }
   }
@@ -89,6 +92,16 @@ export function AuthForm({ mode = "login", next }) {
                   <li key={detail}>{detail}</li>
                 ))}
               </ul>
+            )}
+            {errorCode === "EMAIL_IN_USE" && isSignup && (
+              <p className="mt-3">
+                <Link
+                  href={switchHref}
+                  className="font-semibold underline decoration-[var(--color-error)]/40 underline-offset-2 hover:decoration-[var(--color-error)]"
+                >
+                  That email is already registered — sign in instead
+                </Link>
+              </p>
             )}
           </div>
         </div>

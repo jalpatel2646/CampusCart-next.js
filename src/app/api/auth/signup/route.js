@@ -8,7 +8,7 @@ import { serializeSeller } from "@/lib/serializers";
 import { registerSeller } from "@/services/auth.service";
 
 export const POST = withApi(async (request) => {
-  rateLimit(request, { name: "signup", limit: 5, windowMs: 60 * 60 * 1000 });
+  rateLimit(request, { name: "signup", limit: 10, windowMs: 60 * 60 * 1000 });
 
   const parsed = signupSchema.safeParse(await readJson(request));
   if (!parsed.success) {

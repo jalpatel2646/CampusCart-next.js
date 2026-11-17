@@ -189,8 +189,17 @@ Never commit `.env.local` or any real credentials.
   Guest buyers are not notified by email; they only see the response when they
   revisit the listing or sign in to their inbox.
 - Saved searches and notifications are account-scoped and in-app only.
-- Spam limiting uses an in-memory counter; it resets when the server restarts and
-  is per instance.
+- Spam limiting uses an in-memory fixed-window counter. It is per server
+  instance, so Vercel may run several concurrent instances and cold starts
+  lose the counter. Clients are keyed by `x-vercel-forwarded-for` (Vercel
+  documents this as the same IP as `x-forwarded-for`, but not overridable by
+  an upstream proxy), falling back to `x-forwarded-for` then `x-real-ip`; if
+  no identifiable IP is visible the caller shares one bounded "unknown"
+  bucket instead of an empty-KeyMap bucket. Signup is limited to 10/hour per
+  IP, login to 15 per 15 minutes. For durable, global limiting use a shared
+  store (e.g. Upstash Redis / Vercel KV) with `INCR` + `EXPIRE`; the 429
+  contract (`RATE_LIMITED` + `retryAfterSeconds`) is already compatible with
+  that swap.
 - `npm audit` reports moderate issues in the ESLint toolchain. The suggested
   automated fix would downgrade Next.js to version 15, so it is not applied.
   These packages are development-only and are not part of the runtime bundle.
