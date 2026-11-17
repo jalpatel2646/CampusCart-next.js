@@ -16,7 +16,9 @@ import { ListingStatusBadge } from "@/components/marketplace/ListingStatusBadge"
 import { PriceDisplay } from "@/components/marketplace/PriceDisplay";
 import { ProductConditionBadge } from "@/components/marketplace/ProductConditionBadge";
 import { SellerCard } from "@/components/marketplace/SellerCard";
+import { ShareListingButton } from "@/components/marketplace/ShareListingButton";
 import { formatListedDateLong } from "@/lib/format";
+import { absoluteUrl } from "@/config/site";
 import { getFavoriteStatus, getListingDetail } from "@/lib/data";
 import { referenceId } from "@/lib/ownership";
 import { getSellerSession } from "@/lib/session";
@@ -59,6 +61,7 @@ async function ProductDetails({ initialData }) {
   const canManage = Boolean(sellerId) && referenceId(listing.seller) === sellerId;
   const isFavorite =
     sellerId && !canManage ? await getFavoriteStatus(sellerId, listing._id) : false;
+  const shareUrl = absoluteUrl(`/product/${listing._id}`);
 
   const isAvailable = listing.status === "Available";
   const isExchange = listing.listingType === "Exchange";
@@ -228,6 +231,7 @@ async function ProductDetails({ initialData }) {
               )}
             </>
           )}
+          <ShareListingButton url={shareUrl} title={listing.name} />
         </div>
 
       </div>
