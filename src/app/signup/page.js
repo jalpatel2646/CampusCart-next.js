@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { AuthForm } from "@/components/auth/AuthForm";
-import { Skeleton } from "@/components/common/Skeleton";
 import { safeRedirectPath } from "@/lib/redirects";
 import { getSellerSession } from "@/lib/session";
 
@@ -12,7 +10,11 @@ export const metadata = {
     "Create a free CampusCart account to list items, save favourites, and manage buyer enquiries.",
 };
 
-export default function SignupPage({ searchParams }) {
+export default async function SignupPage({ searchParams }) {
+  const { next } = await searchParams;
+  const sellerId = await getSellerSession();
+  if (sellerId) redirect(safeRedirectPath(next));
+
   return (
     <PageContainer>
       <div className="mx-auto max-w-md py-8 sm:py-14">
@@ -26,22 +28,8 @@ export default function SignupPage({ searchParams }) {
           </p>
         </header>
 
-        <Suspense fallback={<AuthSkeleton />}>
-          <SignupContent searchParams={searchParams} />
-        </Suspense>
+        <AuthForm mode="signup" next={next} />
       </div>
     </PageContainer>
   );
-}
-
-async function SignupContent({ searchParams }) {
-  const { next } = await searchParams;
-  const sellerId = await getSellerSession();
-  if (sellerId) redirect(safeRedirectPath(next));
-
-  return <AuthForm mode="signup" next={next} />;
-}
-
-function AuthSkeleton() {
-  return <Skeleton className="h-96 w-full rounded-xl" />;
 }

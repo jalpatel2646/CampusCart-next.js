@@ -14,8 +14,8 @@ export const PATCH = withApi(async (request, context) => {
   assertOwner(existing.seller, sellerId);
 
   const listing = await updateListing(id, { isActive: true });
-  revalidateTag(LISTINGS_TAG, "max");
-  revalidateTag(SELLERS_TAG, "max");
+  revalidateTag(LISTINGS_TAG, { expire: 0 });
+  revalidateTag(SELLERS_TAG, { expire: 0 });
 
   return ok(serializeListing(listing), { message: "Listing reactivated" });
 });

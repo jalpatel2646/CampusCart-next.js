@@ -132,19 +132,34 @@ All mutations validate input on the server. Errors return
 
 ## Deployment
 
-1. Create a MongoDB Atlas database and restrict access to the deployment.
+### Vercel (recommended)
+
+1. Create a MongoDB Atlas database, add the deployment's outbound IPs to the
+   access list (or allow `0.0.0.0/0` if the host has no fixed egress IPs), and
+   copy the connection string.
 2. Create a Cloudinary account and copy the cloud name, API key, and API secret.
-3. Set every variable from `.env.example` in the hosting provider's environment
-   settings, including `NEXT_PUBLIC_APP_URL` set to the final HTTPS origin and a
-   strong `SESSION_SECRET`.
-4. Build and deploy the app. The health check at `/api/health` should report
-   `"database": "connected"`.
-5. Point the custom domain at the hosting provider and wait for DNS and the TLS
-   certificate to become active. This step requires access to the domain and the
-   hosting account, so it cannot be completed from inside the repository.
-6. After the domain resolves, confirm that `NEXT_PUBLIC_APP_URL` matches it
-   exactly, redeploy, and check `/sitemap.xml`, `/robots.txt`, and the Open Graph
-   preview.
+3. Import the repository into Vercel. Keep the detected Next.js settings; the
+   build command stays `npm run build`.
+4. Add every variable from `.env.example` to the project's Production
+   environment (and Preview if you use preview deployments). Set
+   `NEXT_PUBLIC_APP_URL` to the final HTTPS origin and generate a strong
+   `SESSION_SECRET`.
+5. Deploy and open `/api/health`. It should report `"database": "connected"`.
+6. In Project → Settings → Domains, add the custom domain. At the registrar,
+   create the DNS records Vercel shows (`A 76.76.21.21` for a root domain or the
+   `cname.vercel-dns.com` CNAME it provides) and wait for verification and the
+   TLS certificate.
+7. Set `NEXT_PUBLIC_APP_URL` to the custom domain, redeploy, and confirm
+   `/sitemap.xml`, `/robots.txt`, and the Open Graph image use that origin.
+
+The domain and hosting steps require access to the domain and the Vercel
+account, so they cannot be completed from inside this repository.
+
+### Self-hosted
+
+Run `npm run build` followed by `npm run start` behind an HTTPS reverse proxy,
+and provide the same environment variables. Terminate TLS at the proxy so the
+`Secure` session cookie is sent correctly.
 
 ## Known limitations
 

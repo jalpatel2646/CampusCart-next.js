@@ -25,7 +25,7 @@ export function HeroSection({ liveCount = 0, freeCount = 0, sellerCount = 0 }) {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)] shadow-[var(--shadow-xs)]">
             <span className="lime-dot h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]" aria-hidden="true" />
-            Built for campus life · no sign-up needed
+            Built for campus life · student accounts
           </span>
 
           <h1 className="mt-6 text-[length:var(--font-size-display)] font-bold leading-[1.02] tracking-tight">

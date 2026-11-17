@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gavel, LayoutDashboard, ListChecks, MessageSquare } from "lucide-react";
+import { Bookmark, Gavel, LayoutDashboard, ListChecks, MessageSquare } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 const LINKS = [
@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/dashboard/listings", label: "Listings", icon: ListChecks },
   { href: "/dashboard/enquiries", label: "Enquiries", icon: MessageSquare },
   { href: "/dashboard/offers", label: "Offers", icon: Gavel },
+  { href: "/dashboard/searches", label: "Searches", icon: Bookmark },
 ];
 
 export function DashboardNav() {

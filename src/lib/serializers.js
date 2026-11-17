@@ -82,3 +82,39 @@ export function serializeFavorite(favorite) {
     createdAt: toIsoString(source.createdAt),
   };
 }
+
+/**
+ * Serializes a saved search. Match counts are attached by the listing count
+ * in the service and are read from the source document when present.
+ */
+export function serializeSavedSearch(savedSearch, extra = {}) {
+  if (!savedSearch) return null;
+  const source =
+    typeof savedSearch.toObject === "function" ? savedSearch.toObject() : savedSearch;
+  const asNumber = (value, fallback) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  return {
+    _id: String(source._id),
+    name: source.name ?? "",
+    search: source.search ?? "",
+    categories: Array.isArray(source.categories) ? source.categories : [],
+    conditions: Array.isArray(source.conditions) ? source.conditions : [],
+    minPrice:
+      source.minPrice === null || source.minPrice === undefined
+        ? null
+        : Number(source.minPrice),
+    maxPrice:
+      source.maxPrice === null || source.maxPrice === undefined
+        ? null
+        : Number(source.maxPrice),
+    sort: source.sort ?? "newest",
+    lastSeenAt: toIsoString(source.lastSeenAt),
+    createdAt: toIsoString(source.createdAt),
+    updatedAt: toIsoString(source.updatedAt),
+    matchCount: asNumber(extra.matchCount ?? source.matchCount, 0),
+    newCount: asNumber(extra.newCount ?? source.newCount, 0),
+  };
+}

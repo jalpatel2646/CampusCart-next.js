@@ -13,11 +13,13 @@ import {
   getSellerListings,
 } from "@/services/seller.service";
 import { getFavorites, isFavorite } from "@/services/favorite.service";
+import { listSavedSearches } from "@/services/saved-search.service";
 import Listing from "@/models/listing";
 import {
   serializeEnquiry,
   serializeFavorite,
   serializeListing,
+  serializeSavedSearch,
   serializeSeller,
 } from "@/lib/serializers";
 
@@ -197,6 +199,17 @@ export async function getFavoritesData(buyerId) {
     ...result,
     items: result.items.map(serializeFavorite),
   };
+}
+
+/**
+ * Saved searches for the signed-in account. Each item includes live match and
+ * new-match counts, measured against the listing query contract.
+ */
+export async function getSavedSearchesData(sellerId) {
+  if (!sellerId) return [];
+
+  const items = await listSavedSearches(sellerId);
+  return items.map((item) => serializeSavedSearch(item));
 }
 
 /** Whether the signed-in account has saved a listing. Request-time data. */

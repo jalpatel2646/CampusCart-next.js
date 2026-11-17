@@ -135,7 +135,7 @@ export function Navbar({ user = null }) {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden xl:flex items-center gap-1">
           {NAV_LINKS.map((link) => {
             const Icon = link.icon;
             return (
@@ -199,28 +199,29 @@ export function Navbar({ user = null }) {
             )}
           </div>
 
-          {SECONDARY_LINKS.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150",
-                  isActive(link.href)
-                    ? "bg-[var(--color-bg-secondary)] text-[var(--color-primary-navy)]"
-                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-main)]"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {link.label}
-              </Link>
-            );
-          })}
+          {user &&
+            SECONDARY_LINKS.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150",
+                    isActive(link.href)
+                      ? "bg-[var(--color-bg-secondary)] text-[var(--color-primary-navy)]"
+                      : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-main)]"
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {link.label}
+                </Link>
+              );
+            })}
         </div>
 
         {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden xl:flex items-center gap-3">
           {user ? (
             <>
               <Link
@@ -273,7 +274,7 @@ export function Navbar({ user = null }) {
         {/* Mobile Menu Toggle */}
         <button
           type="button"
-          className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)] transition-colors duration-150"
+          className="xl:hidden flex h-10 w-10 items-center justify-center rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)] transition-colors duration-150"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
@@ -284,7 +285,7 @@ export function Navbar({ user = null }) {
 
       {/* Mobile Navigation */}
       {mobileOpen && (
-        <div className="animate-slide-down md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg-card)]">
+        <div className="animate-slide-down xl:hidden border-t border-[var(--color-border)] bg-[var(--color-bg-card)]">
           <div className="mx-auto max-w-[var(--container-2xl)] px-4 py-3 space-y-1">
             {NAV_LINKS.map((link) => {
               const Icon = link.icon;
@@ -332,25 +333,26 @@ export function Navbar({ user = null }) {
             {/* Divider */}
             <div className="border-t border-[var(--color-border)] my-2" />
 
-            {SECONDARY_LINKS.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
-                    isActive(link.href)
-                      ? "bg-[var(--color-bg-secondary)] text-[var(--color-primary-navy)]"
-                      : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)] hover:text-[var(--color-text-primary)]"
-                  )}
-                >
-                  <Icon className="h-4.5 w-4.5" />
-                  {link.label}
-                </Link>
-              );
-            })}
+            {user &&
+              SECONDARY_LINKS.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+                      isActive(link.href)
+                        ? "bg-[var(--color-bg-secondary)] text-[var(--color-primary-navy)]"
+                        : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)] hover:text-[var(--color-text-primary)]"
+                    )}
+                  >
+                    <Icon className="h-4.5 w-4.5" />
+                    {link.label}
+                  </Link>
+                );
+              })}
 
             {/* Mobile CTA */}
             {user ? (

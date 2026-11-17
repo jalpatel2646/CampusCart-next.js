@@ -110,6 +110,21 @@ export const removeFavorite = (listing) =>
 export const getFavoriteStatus = (listing) =>
   request(`/api/favorites/${listing}`);
 
+/* Saved searches */
+export const getSavedSearches = () => request("/api/saved-searches");
+
+export const createSavedSearch = (payload) =>
+  request("/api/saved-searches", { method: "POST", body: payload });
+
+export const deleteSavedSearch = (id) =>
+  request(`/api/saved-searches/${id}`, { method: "DELETE" });
+
+export const markSavedSearchSeen = (id) =>
+  request(`/api/saved-searches/${id}/seen`, { method: "POST" });
+
+export const markAllSavedSearchesSeen = () =>
+  request("/api/saved-searches/seen", { method: "POST" });
+
 /* Dashboard */
 export const getDashboard = () => request("/api/dashboard");
 

@@ -1,6 +1,12 @@
-import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS } from "@/lib/constants";
+import {
+  LISTING_SORTS,
+  PRODUCT_CATEGORIES,
+  PRODUCT_CONDITIONS,
+} from "@/lib/constants";
 
-export const LISTING_SORTS = ["newest", "price_asc", "price_desc", "relevance"];
+export { LISTING_SORTS };
+
+const RUPEES = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 
 function first(value) {
   return Array.isArray(value) ? value[0] : value;
@@ -86,4 +92,84 @@ export function hasActiveListingFilters(params = {}) {
       params.minPrice !== undefined ||
       params.maxPrice !== undefined
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Saved searches                                                      */
+/* ------------------------------------------------------------------ */
+
+/** The subset of listing filters that a saved search remembers. */
+export function savedSearchFromParams(params = {}) {
+  const filters = parseListingParams(params);
+
+  return {
+    search: filters.search,
+    categories: filters.categories,
+    conditions: filters.conditions,
+    minPrice: filters.minPrice,
+    maxPrice: filters.maxPrice,
+    sort: filters.sort,
+  };
+}
+
+function hasValue(value) {
+  return value !== null && value !== undefined && value !== "";
+}
+
+function priceLabel(minPrice, maxPrice) {
+  const hasMin = hasValue(minPrice);
+  const hasMax = hasValue(maxPrice);
+  const format = (value) => `₹${RUPEES.format(Number(value))}`;
+
+  if (hasMin && hasMax) return `${format(minPrice)}–${format(maxPrice)}`;
+  if (hasMax) return `Under ${format(maxPrice)}`;
+  if (hasMin) return `Over ${format(minPrice)}`;
+  return null;
+}
+
+/**
+ * Human-readable filter chips for a saved search.
+ * Returns an empty array when the search matches everything.
+ */
+export function describeSavedSearch(values = {}) {
+  const labels = [];
+  const search = String(values.search ?? "").trim();
+
+  if (search) labels.push(`“${search}”`);
+  for (const category of values.categories ?? []) labels.push(category);
+  for (const condition of values.conditions ?? []) labels.push(condition);
+
+  const price = priceLabel(values.minPrice, values.maxPrice);
+  if (price) labels.push(price);
+
+  return labels;
+}
+
+/** True when the filters are specific enough to be worth saving. */
+export function hasSavedSearchCriteria(values = {}) {
+  return describeSavedSearch(values).length > 0;
+}
+
+/** Generates a default name such as `Books · Under ₹500`. */
+export function suggestSavedSearchName(values = {}) {
+  const labels = describeSavedSearch(values);
+  if (labels.length === 0) return "All listings";
+
+  const name = labels.join(" · ");
+  return name.length > 80 ? `${name.slice(0, 77)}…` : name;
+}
+
+/** Rebuilds the /marketplace URL that a saved search represents. */
+export function savedSearchHref(values = {}) {
+  const params = new URLSearchParams();
+
+  if (values.search) params.set("search", values.search);
+  for (const category of values.categories ?? []) params.append("category", category);
+  for (const condition of values.conditions ?? []) params.append("condition", condition);
+  if (hasValue(values.minPrice)) params.set("minPrice", String(values.minPrice));
+  if (hasValue(values.maxPrice)) params.set("maxPrice", String(values.maxPrice));
+  if (values.sort && values.sort !== "newest") params.set("sort", values.sort);
+
+  const query = params.toString();
+  return query ? `/marketplace?${query}` : "/marketplace";
 }

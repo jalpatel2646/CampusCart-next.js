@@ -48,8 +48,8 @@ export const PUT = withApi(async (request, context) => {
   }
 
   const listing = await updateListing(id, parsed.data);
-  revalidateTag(LISTINGS_TAG, "max");
-  revalidateTag(SELLERS_TAG, "max");
+  revalidateTag(LISTINGS_TAG, { expire: 0 });
+  revalidateTag(SELLERS_TAG, { expire: 0 });
 
   return ok(serializeListing(listing), { message: "Listing updated" });
 });
@@ -61,8 +61,8 @@ export const DELETE = withApi(async (request, context) => {
   assertOwner(existing.seller, sellerId);
 
   await deleteListing(id);
-  revalidateTag(LISTINGS_TAG, "max");
-  revalidateTag(SELLERS_TAG, "max");
+  revalidateTag(LISTINGS_TAG, { expire: 0 });
+  revalidateTag(SELLERS_TAG, { expire: 0 });
 
   return ok({ deleted: true }, { message: "Listing deleted" });
 });

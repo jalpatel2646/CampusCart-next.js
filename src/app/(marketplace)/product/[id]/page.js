@@ -77,31 +77,12 @@ async function ProductDetails({ initialData }) {
         ]}
       />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
-        <div className="space-y-8">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-x-12">
+        <div className="lg:col-start-1 lg:row-start-1">
           <ImageGallery images={listing.images} alt={listing.name} />
-
-          <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-card)] sm:p-6">
-            <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Description</h2>
-            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[var(--color-text-secondary)]">
-              {listing.description}
-            </p>
-
-            {isExchange && listing.exchangeDescription && (
-              <div className="mt-5 rounded-lg border border-dashed border-[var(--color-primary)]/25 bg-[var(--color-bg-lime)] p-4">
-                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--color-primary)]">
-                  <Repeat2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  Looking to swap for
-                </p>
-                <p className="mt-2 text-sm text-[var(--color-text-primary)]">
-                  {listing.exchangeDescription}
-                </p>
-              </div>
-            )}
-          </section>
         </div>
 
-        <aside className="space-y-5 self-start lg:sticky lg:top-20">
+        <div className="space-y-5 lg:col-start-2 lg:row-start-1">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               {isFree && <Badge variant="accent">Free</Badge>}
@@ -160,7 +141,28 @@ async function ProductDetails({ initialData }) {
           </dl>
 
           <SellerCard seller={listing.seller} />
+        </div>
 
+        <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-card)] sm:p-6 lg:col-start-1 lg:row-start-2">
+          <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Description</h2>
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[var(--color-text-secondary)]">
+            {listing.description}
+          </p>
+
+          {isExchange && listing.exchangeDescription && (
+            <div className="mt-5 rounded-lg border border-dashed border-[var(--color-primary)]/25 bg-[var(--color-bg-lime)] p-4">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--color-primary)]">
+                <Repeat2 className="h-3.5 w-3.5" aria-hidden="true" />
+                Looking to swap for
+              </p>
+              <p className="mt-2 text-sm text-[var(--color-text-primary)]">
+                {listing.exchangeDescription}
+              </p>
+            </div>
+          )}
+        </section>
+
+        <div className="space-y-5 lg:col-start-2 lg:row-start-2">
           {canManage ? (
             <div className="rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-bg-lime)] p-5">
               <p className="text-sm font-semibold text-[var(--color-text-primary)]">
@@ -226,7 +228,8 @@ async function ProductDetails({ initialData }) {
               )}
             </>
           )}
-        </aside>
+        </div>
+
       </div>
 
       {similar.length > 0 && (

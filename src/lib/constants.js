@@ -1,5 +1,7 @@
 ﻿export const PRODUCT_CATEGORIES = ["Books", "Electronics", "Furniture", "Stationery", "Other"];
 
+export const LISTING_SORTS = ["newest", "price_asc", "price_desc", "relevance"];
+
 export const PRODUCT_CONDITIONS = ["Like New", "Good", "Fair", "Used"];
 
 export const LISTING_TYPES = ["For Sale", "Free", "Exchange"];

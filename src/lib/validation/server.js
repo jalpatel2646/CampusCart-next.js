@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   ENQUIRY_STATUSES,
+  LISTING_SORTS,
   LISTING_STATUSES,
   LISTING_TYPES,
   PRODUCT_CATEGORIES,
@@ -110,6 +111,66 @@ export const enquirySchema = z.object({
 export const listingStatusSchema = z.object({
   status: z.enum(LISTING_STATUSES, { message: "Choose a valid status" }),
 });
+
+/** Accepts a number, "", null or undefined for an optional price bound. */
+const nullablePrice = z.preprocess(
+  (value) => (value === "" || value === undefined ? null : value),
+  z.coerce
+    .number({ message: "Enter a valid price" })
+    .min(0, "Price cannot be negative")
+    .max(MAX_PRICE, "Price is unrealistically high")
+    .nullable()
+);
+
+const savedSearchFields = {
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be at most 80 characters"),
+  search: optionalText(100, "Search must be at most 100 characters").default(""),
+  categories: z
+    .array(z.enum(PRODUCT_CATEGORIES, { message: "Choose a valid category" }))
+    .max(PRODUCT_CATEGORIES.length, "Choose at most one of each category")
+    .default([]),
+  conditions: z
+    .array(z.enum(PRODUCT_CONDITIONS, { message: "Choose a valid condition" }))
+    .max(PRODUCT_CONDITIONS.length, "Choose valid conditions")
+    .default([]),
+  minPrice: nullablePrice,
+  maxPrice: nullablePrice,
+  sort: z.enum(LISTING_SORTS, { message: "Choose a valid sort order" }).default("newest"),
+};
+
+export const savedSearchSchema = z
+  .object(savedSearchFields)
+  .superRefine((data, ctx) => {
+    const hasCriteria =
+      data.search.length > 0 ||
+      data.categories.length > 0 ||
+      data.conditions.length > 0 ||
+      data.minPrice !== null ||
+      data.maxPrice !== null;
+
+    if (!hasCriteria) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["search"],
+        message: "Add a search term, category, condition, or price range before saving",
+      });
+    }
+    if (
+      data.minPrice !== null &&
+      data.maxPrice !== null &&
+      data.minPrice > data.maxPrice
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["maxPrice"],
+        message: "Maximum price must be at least the minimum",
+      });
+    }
+  });
 
 export const enquiryStatusSchema = z.object({
   status: z.enum(ENQUIRY_STATUSES, { message: "Choose a valid status" }),

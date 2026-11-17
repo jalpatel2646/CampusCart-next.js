@@ -50,8 +50,8 @@ export const POST = withApi(async (request) => {
 
   const listing = await createListing({ ...parsed.data, seller: sellerId });
 
-  revalidateTag(LISTINGS_TAG, "max");
-  revalidateTag(SELLERS_TAG, "max");
+  revalidateTag(LISTINGS_TAG, { expire: 0 });
+  revalidateTag(SELLERS_TAG, { expire: 0 });
 
   return created(serializeListing(listing), "Listing published");
 });

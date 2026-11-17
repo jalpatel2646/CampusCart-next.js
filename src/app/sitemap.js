@@ -4,8 +4,6 @@ import { getSitemapListings } from "@/lib/data";
 const STATIC_ROUTES = [
   { path: "/", changeFrequency: "daily", priority: 1 },
   { path: "/marketplace", changeFrequency: "daily", priority: 0.9 },
-  { path: "/create-listing", changeFrequency: "monthly", priority: 0.6 },
-  { path: "/favorites", changeFrequency: "weekly", priority: 0.4 },
   { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
 ];

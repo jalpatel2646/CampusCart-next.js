@@ -7,6 +7,7 @@ import { Button } from "@/components/common/Button";
 import { Checkbox } from "@/components/common/Checkbox";
 import { Input } from "@/components/common/Input";
 import { Radio } from "@/components/common/Radio";
+import { SaveSearchButton } from "@/components/marketplace/SaveSearchButton";
 import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS } from "@/lib/constants";
 import { cn } from "@/utils/cn";
 
@@ -280,8 +281,14 @@ export function MarketplaceBrowser({ summary, categoryCounts = {}, children }) {
         </aside>
 
         {/* Results */}
-        <section aria-live="polite" className={cn("transition-opacity duration-200", isPending && "opacity-60")}>
-          <p className="mb-4 text-sm text-[var(--color-text-secondary)]">{summary}</p>
+        <section
+          aria-live="polite"
+          className={cn("transition-opacity duration-200", isPending && "opacity-60")}
+        >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-[var(--color-text-secondary)]">{summary}</p>
+            <SaveSearchButton />
+          </div>
           {children}
         </section>
       </div>
