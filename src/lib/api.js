@@ -121,6 +121,13 @@ export const markAllNotificationsSeen = () =>
 
 export const getSentEnquiries = () => request("/api/enquiries?sent=true");
 
+/* AI listing assist */
+export const assistDescribe = (payload) =>
+  request("/api/listings/assist", { method: "POST", body: { mode: "describe", ...payload } });
+
+export const assistClassify = (payload) =>
+  request("/api/listings/assist", { method: "POST", body: { mode: "classify", ...payload } });
+
 /* Saved searches */
 export const getSavedSearches = () => request("/api/saved-searches");
 

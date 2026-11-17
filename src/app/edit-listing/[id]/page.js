@@ -5,6 +5,7 @@ import { ListingForm } from "@/components/listings/ListingForm";
 import { ServiceError } from "@/lib/errors";
 import { referenceId } from "@/lib/ownership";
 import { serializeListing } from "@/lib/serializers";
+import { isOpenRouterEnabled } from "@/lib/openrouter";
 import { getSellerSession } from "@/lib/session";
 import { getListingById } from "@/services/listing.service";
 
@@ -51,7 +52,7 @@ export default async function EditListingPage({ params }) {
           </p>
         </header>
 
-        <ListingForm mode="edit" listing={serialized} />
+        <ListingForm mode="edit" listing={serialized} assistEnabled={isOpenRouterEnabled} />
       </div>
     </PageContainer>
   );

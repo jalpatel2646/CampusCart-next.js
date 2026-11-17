@@ -2,6 +2,7 @@
 import { Breadcrumb } from "@/components/common/Breadcrumb";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ListingForm } from "@/components/listings/ListingForm";
+import { isOpenRouterEnabled } from "@/lib/openrouter";
 import { getSellerSession } from "@/lib/session";
 
 export const metadata = {
@@ -32,7 +33,7 @@ export default async function CreateListingPage() {
           </p>
         </header>
 
-        <ListingForm mode="create" />
+        <ListingForm mode="create" assistEnabled={isOpenRouterEnabled} />
       </div>
     </PageContainer>
   );

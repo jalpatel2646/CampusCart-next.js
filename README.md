@@ -14,6 +14,8 @@ Next.js App Router.
 - Product pages with photo gallery, seller contact details, similar listings, and
   working favourite and enquiry forms.
 - Create and edit listings with validated fields and Cloudinary photo uploads.
+- Optional AI assist in the listing form: generate a short description and suggest
+  a category, powered by OpenRouter (auto-disabled when no key is configured).
 - Seller dashboard with listing status (available, reserved, sold), deactivation,
   reactivation, deletion, enquiries, and price offers.
 - Public seller profiles showing current listings and listing history.
@@ -86,6 +88,8 @@ Next.js App Router.
 | `CLOUDINARY_CLOUD_NAME` | For uploads | Cloudinary cloud name. |
 | `CLOUDINARY_API_KEY` | For uploads | Cloudinary API key. |
 | `CLOUDINARY_API_SECRET` | For uploads | Cloudinary API secret. |
+| `OPENROUTER_API_KEY` | Optional | Enables the AI assist buttons in the listing form (generate description, suggest category). |
+| `OPENROUTER_MODEL` | Optional | OpenRouter model id; defaults to `baidu/ernie-5.5-flash-preview:free`, or set `openai/gpt-4o-mini` for higher reliability. |
 
 Without Cloudinary credentials the site still works, but photo uploads return a
 `503` with a clear message instead of silently failing.
@@ -124,6 +128,7 @@ Never commit `.env.local` or any real credentials.
 | `/api/favorites/[listingId]` | `GET`, `DELETE` | Check or remove a saved listing. |
 | `/api/dashboard` | `GET` | Seller dashboard snapshot. |
 | `/api/uploads` | `POST` | Upload up to five images to Cloudinary. |
+| `/api/listings/assist` | `POST` | AI assist for the listing form (`describe` / `classify`); signed-in accounts only. |
 
 All mutations validate input on the server. Errors return
 `{ success: false, message, code, errors? }` with an appropriate status code.

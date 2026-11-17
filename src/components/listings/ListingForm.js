@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { AlertCircle, Save } from "lucide-react";
+import { AlertCircle, Loader2, Save, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { Select } from "@/components/common/Select";
 import { Textarea } from "@/components/common/Textarea";
 import { ImageUploader } from "@/components/listings/ImageUploader";
-import { createListing, updateListing } from "@/lib/api";
+import { createListing, updateListing, assistClassify, assistDescribe } from "@/lib/api";
 import {
   LISTING_TYPES,
   PRODUCT_CATEGORIES,
@@ -33,11 +33,12 @@ const SECTION_CLASS =
  * Shared create/edit listing form (FR-010..FR-024).
  * The seller is taken from the signed-in account on the server.
  */
-export function ListingForm({ mode = "create", listing = null }) {
+export function ListingForm({ mode = "create", listing = null, assistEnabled = false }) {
   const router = useRouter();
   const [formError, setFormError] = useState("");
   const [formDetails, setFormDetails] = useState([]);
   const [imagesUploading, setImagesUploading] = useState(false);
+  const [assistBusy, setAssistBusy] = useState("");
 
   const {
     register,
@@ -54,7 +55,68 @@ export function ListingForm({ mode = "create", listing = null }) {
   const listingType = useWatch({ control, name: "listingType" });
   const images = useWatch({ control, name: "images" }) ?? [];
   const description = useWatch({ control, name: "description" }) ?? "";
+  const name = useWatch({ control, name: "name" }) ?? "";
+  const category = useWatch({ control, name: "category" }) ?? "";
+  const condition = useWatch({ control, name: "condition" }) ?? "";
+  const price = useWatch({ control, name: "price" });
   const isEdit = mode === "edit";
+  const assistTitle = assistEnabled
+    ? "Uses AI on the current item details. Review before saving."
+    : "AI assist is not configured on this server (OPENROUTER_API_KEY is missing).";
+
+  async function handleGenerateDescription() {
+    if (assistBusy) return;
+    if (name.trim().length < 3) {
+      toast.error("Add a product name first (at least 3 characters)");
+      return;
+    }
+    if (description.trim().length > 0) {
+      toast.info("Keeping your existing description — clear it to regenerate");
+      return;
+    }
+
+    setAssistBusy("describe");
+    try {
+      const result = await assistDescribe({
+        name,
+        category,
+        condition,
+        listingType,
+        price: listingType === "For Sale" ? price : 0,
+      });
+      setValue("description", result?.description ?? "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      toast.success("Description generated — review it before publishing");
+    } catch (error) {
+      toast.error(error.message || "Could not generate a description");
+    } finally {
+      setAssistBusy("");
+    }
+  }
+
+  async function handleSuggestCategory() {
+    if (assistBusy) return;
+    if (name.trim().length < 3) {
+      toast.error("Add a product name first (at least 3 characters)");
+      return;
+    }
+
+    setAssistBusy("classify");
+    try {
+      const result = await assistClassify({ name, description });
+      setValue("category", result?.category ?? "Other", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      toast.success(`Suggested category: ${result?.category ?? "Other"}`);
+    } catch (error) {
+      toast.error(error.message || "Could not suggest a category");
+    } finally {
+      setAssistBusy("");
+    }
+  }
 
   async function onSubmit(values) {
     setFormError("");
@@ -118,25 +180,78 @@ export function ListingForm({ mode = "create", listing = null }) {
           error={errors.name?.message}
         />
 
-        <Textarea
-          label="Description"
-          required
-          rows={5}
-          placeholder="Condition, what's included, why you're selling…"
-          helperText={`${description.length}/2000 characters`}
-          {...register("description")}
-          error={errors.description?.message}
-        />
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <label
+              htmlFor="listing-description"
+              className="block text-sm font-medium text-[var(--color-text-primary)]"
+            >
+              Description <span className="text-[var(--color-error)] ml-0.5">*</span>
+            </label>
+            <button
+              type="button"
+              disabled={!assistEnabled || assistBusy !== ""}
+              onClick={handleGenerateDescription}
+              title={assistTitle}
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-primary-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {assistBusy === "describe" ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
+              Generate with AI
+            </button>
+          </div>
+          <div className="mt-1.5">
+            <Textarea
+              id="listing-description"
+              aria-label="Description"
+              required
+              rows={5}
+              placeholder="Condition, what's included, why you're selling…"
+              helperText={`${description.length}/2000 characters`}
+              {...register("description")}
+              error={errors.description?.message}
+            />
+          </div>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Select
-            label="Category"
-            required
-            placeholder="Choose a category"
-            options={PRODUCT_CATEGORIES}
-            {...register("category")}
-            error={errors.category?.message}
-          />
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <label
+                htmlFor="listing-category"
+                className="block text-sm font-medium text-[var(--color-text-primary)]"
+              >
+                Category <span className="text-[var(--color-error)] ml-0.5">*</span>
+              </label>
+              <button
+                type="button"
+                disabled={!assistEnabled || assistBusy !== ""}
+                onClick={handleSuggestCategory}
+                title={assistTitle}
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-[var(--color-primary)] transition-colors duration-150 hover:bg-[var(--color-primary-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {assistBusy === "classify" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Wand2 className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
+                AI suggest
+              </button>
+            </div>
+            <div className="mt-1.5">
+              <Select
+                id="listing-category"
+                aria-label="Category"
+                placeholder="Choose a category"
+                options={PRODUCT_CATEGORIES}
+                {...register("category")}
+                error={errors.category?.message}
+              />
+            </div>
+          </div>
           <Select
             label="Condition"
             required
