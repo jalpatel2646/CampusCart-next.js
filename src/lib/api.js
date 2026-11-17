@@ -101,14 +101,25 @@ export const updateEnquiryStatus = (id, { status, sellerResponse }) =>
 /* Favourites */
 export const getFavorites = () => request("/api/favorites");
 
+export const getFavoriteStatus = (listing) =>
+  request(`/api/favorites/${listing}`);
+
 export const addFavorite = (listing) =>
   request("/api/favorites", { method: "POST", body: { listing } });
 
 export const removeFavorite = (listing) =>
   request(`/api/favorites/${listing}`, { method: "DELETE" });
 
-export const getFavoriteStatus = (listing) =>
-  request(`/api/favorites/${listing}`);
+/* Notifications */
+export const getNotifications = () => request("/api/notifications");
+
+export const markNotificationSeen = (id) =>
+  request(`/api/notifications/${id}/seen`, { method: "POST" });
+
+export const markAllNotificationsSeen = () =>
+  request("/api/notifications/seen", { method: "POST" });
+
+export const getSentEnquiries = () => request("/api/enquiries?sent=true");
 
 /* Saved searches */
 export const getSavedSearches = () => request("/api/saved-searches");

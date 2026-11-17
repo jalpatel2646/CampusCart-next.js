@@ -13,6 +13,8 @@ import {
   getSellerListings,
 } from "@/services/seller.service";
 import { getFavorites, isFavorite } from "@/services/favorite.service";
+import { getEnquiries } from "@/services/enquiry.service";
+import { getUnreadNotificationCount } from "@/services/notification.service";
 import { listSavedSearches } from "@/services/saved-search.service";
 import Listing from "@/models/listing";
 import {
@@ -222,6 +224,23 @@ export async function getFavoriteStatus(buyerId, listingId) {
     if (isMissing(error)) return false;
     throw error;
   }
+}
+
+/** Outgoing enquiries for the signed-in account (buyer inbox). */
+export async function getBuyerEnquiriesData(accountId, { limit = 50 } = {}) {
+  if (!accountId) return { items: [], total: 0, page: 1, totalPages: 1 };
+
+  const result = await getEnquiries({ buyerId: accountId, limit });
+  return {
+    ...result,
+    items: result.items.map(serializeEnquiry),
+  };
+}
+
+/** Unread notification count for the navbar badge. */
+export async function getUnreadNotificationsData(accountId) {
+  if (!accountId) return 0;
+  return getUnreadNotificationCount(accountId);
 }
 
 /** URLs for the sitemap; only public, active listings are exposed. */

@@ -12,6 +12,7 @@ import {
   Store,
   Grid3X3,
   Heart,
+  Bell,
   PlusCircle,
   LayoutDashboard,
   ChevronDown,
@@ -41,10 +42,24 @@ const NAV_LINKS = [
 
 const SECONDARY_LINKS = [
   { href: "/favorites", label: "Favorites", icon: Heart },
+  { href: "/enquiries", label: "My enquiries", icon: Bell },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
-export function Navbar({ user = null }) {
+function UnreadBadge({ count }) {
+  if (!count) return null;
+  const label = count > 99 ? "99+" : String(count);
+  return (
+    <span
+      className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center whitespace-nowrap rounded-full bg-[var(--color-accent-lime)] px-1 text-[10px] font-bold text-[var(--color-primary-navy)] ring-1 ring-[var(--color-bg-card)]"
+      aria-hidden="true"
+    >
+      {label}
+    </span>
+  );
+}
+
+export function Navbar({ user = null, unread = 0 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -202,12 +217,14 @@ export function Navbar({ user = null }) {
           {user &&
             SECONDARY_LINKS.map((link) => {
               const Icon = link.icon;
+              const showBadge = link.href === "/enquiries" ? unread : 0;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
+                  aria-label={showBadge ? `${link.label}, ${showBadge} new` : link.label}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150",
+                    "relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150",
                     isActive(link.href)
                       ? "bg-[var(--color-bg-secondary)] text-[var(--color-primary-navy)]"
                       : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-main)]"
@@ -215,6 +232,7 @@ export function Navbar({ user = null }) {
                 >
                   <Icon className="h-4 w-4" />
                   {link.label}
+                  <UnreadBadge count={showBadge} />
                 </Link>
               );
             })}
@@ -336,13 +354,14 @@ export function Navbar({ user = null }) {
             {user &&
               SECONDARY_LINKS.map((link) => {
                 const Icon = link.icon;
+                const showBadge = link.href === "/enquiries" ? unread : 0;
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+                      "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150",
                       isActive(link.href)
                         ? "bg-[var(--color-bg-secondary)] text-[var(--color-primary-navy)]"
                         : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)] hover:text-[var(--color-text-primary)]"
@@ -350,6 +369,7 @@ export function Navbar({ user = null }) {
                   >
                     <Icon className="h-4.5 w-4.5" />
                     {link.label}
+                    <UnreadBadge count={showBadge} />
                   </Link>
                 );
               })}

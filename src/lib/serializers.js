@@ -84,6 +84,48 @@ export function serializeFavorite(favorite) {
 }
 
 /**
+ * Serializer for an outgoing enquiry notification. Listing and enquiry are
+ * lean snapshots (the names and the latest status are all the UI needs).
+ */
+export function serializeNotification(notification) {
+  if (!notification) return null;
+  const source =
+    typeof notification.toObject === "function" ? notification.toObject() : notification;
+
+  const listingSource = source.listing;
+  const enquirySource = source.enquiry;
+
+  return {
+    _id: String(source._id),
+    kind: source.kind ?? "enquiry_response",
+    readAt: toIsoString(source.readAt),
+    createdAt: toIsoString(source.createdAt),
+    listing: listingSource
+      ? {
+          _id: String(listingSource._id),
+          name: listingSource.name ?? "",
+          price: Number(listingSource.price ?? 0),
+          listingType: listingSource.listingType ?? "For Sale",
+          status: listingSource.status ?? "Available",
+          image: Array.isArray(listingSource.images) ? listingSource.images[0] ?? null : null,
+        }
+      : null,
+    enquiry: enquirySource
+      ? {
+          _id: String(enquirySource._id),
+          status: enquirySource.status ?? "Pending",
+          offerPrice:
+            enquirySource.offerPrice === undefined || enquirySource.offerPrice === null
+              ? null
+              : Number(enquirySource.offerPrice),
+          sellerResponse: enquirySource.sellerResponse ?? "",
+          buyerName: enquirySource.buyerName ?? "",
+        }
+      : null,
+  };
+}
+
+/**
  * Serializes a saved search. Match counts are attached by the listing count
  * in the service and are read from the source document when present.
  */

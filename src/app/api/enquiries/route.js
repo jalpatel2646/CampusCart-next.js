@@ -1,7 +1,7 @@
 import { created, ok, readJson, withApi } from "@/lib/http";
 import { ServiceError } from "@/lib/errors";
 import { rateLimit } from "@/lib/rate-limit";
-import { requireSellerSession } from "@/lib/session";
+import { getSellerSession, requireSellerSession } from "@/lib/session";
 import { enquirySchema, validationDetails } from "@/lib/validation/server";
 import { serializeEnquiry } from "@/lib/serializers";
 import { createEnquiry, getEnquiries } from "@/services/enquiry.service";
@@ -9,6 +9,19 @@ import { createEnquiry, getEnquiries } from "@/services/enquiry.service";
 export const GET = withApi(async (request) => {
   const sellerId = await requireSellerSession();
   const { searchParams } = new URL(request.url);
+
+  if (searchParams.get("sent") === "true") {
+    const result = await getEnquiries({
+      buyerId: sellerId,
+      page: searchParams.get("page") ?? 1,
+      limit: searchParams.get("limit") ?? 50,
+    });
+
+    return ok({
+      ...result,
+      items: result.items.map(serializeEnquiry),
+    });
+  }
 
   const result = await getEnquiries({
     sellerId,
@@ -35,6 +48,7 @@ export const POST = withApi(async (request) => {
     });
   }
 
-  const enquiry = await createEnquiry(parsed.data);
+  const accountId = await getSellerSession();
+  const enquiry = await createEnquiry(parsed.data, { accountId });
   return created(serializeEnquiry(enquiry), "Enquiry sent");
 });

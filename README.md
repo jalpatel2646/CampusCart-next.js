@@ -16,6 +16,10 @@ Next.js App Router.
   reactivation, deletion, enquiries, and price offers.
 - Public seller profiles showing current listings and listing history.
 - Account-scoped saved listings.
+- Buyer inbox at `/enquiries` listing outgoing enquiries and the seller's
+  responses, with an unread badge in the navbar.
+- Notifications are delivered in-app; guest enquiries keep only the typed email
+  and can follow the listing page for updates.
 - Privacy policy and terms pages.
 - Database-aware health endpoint at `/api/health` and generated `sitemap.xml`,
   `robots.txt`, icons, and Open Graph image.
@@ -109,8 +113,11 @@ Never commit `.env.local` or any real credentials.
 | `/api/listings/[id]/status` | `PATCH` | Change availability. |
 | `/api/listings/[id]/deactivate` | `PATCH` | Hide a listing without deleting it. |
 | `/api/listings/[id]/reactivate` | `PATCH` | Restore a hidden listing. |
-| `/api/enquiries` | `GET`, `POST` | Seller inbox; create an enquiry or offer. |
+| `/api/enquiries` | `GET`, `POST` | Seller inbox; create an enquiry or offer. `GET ?sent=true` returns the signed-in buyer's outgoing enquiries. |
 | `/api/enquiries/[id]` | `PATCH` | Accept, reject, close, or annotate an enquiry. |
+| `/api/notifications` | `GET` | Notification inbox and unread count for the signed-in account. |
+| `/api/notifications/[id]/seen` | `POST` | Mark one notification read. |
+| `/api/notifications/seen` | `POST` | Mark all notifications read. |
 | `/api/favorites` | `GET`, `POST` | List or add saved listings for the signed-in account. |
 | `/api/favorites/[listingId]` | `GET`, `DELETE` | Check or remove a saved listing. |
 | `/api/dashboard` | `GET` | Seller dashboard snapshot. |
@@ -167,8 +174,9 @@ and provide the same environment variables. Terminate TLS at the proxy so the
   password-reset email flow or two-factor authentication yet.
 - No payment processing. Buyers and sellers arrange payment and handover
   directly.
-- Seller responses to enquiries are stored as notes. No email is sent, so the
-  dashboard tells sellers to contact the buyer directly.
+- Seller responses to enquiries are delivered in-app for signed-in buyers.
+  Guest buyers are not notified by email; they only see the response when they
+  revisit the listing or sign in to their inbox.
 - Spam limiting uses an in-memory counter; it resets when the server restarts and
   is per instance.
 - `npm audit` reports moderate issues in the ESLint toolchain. The suggested

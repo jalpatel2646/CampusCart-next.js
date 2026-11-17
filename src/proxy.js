@@ -9,6 +9,7 @@ const PROTECTED_PREFIXES = [
   "/favorites",
   "/create-listing",
   "/edit-listing",
+  "/enquiries",
 ];
 
 function isProtected(pathname) {
@@ -55,6 +56,7 @@ export const config = {
     "/favorites",
     "/create-listing",
     "/edit-listing/:path*",
+    "/enquiries",
     "/login",
     "/signup",
   ],

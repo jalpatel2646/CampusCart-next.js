@@ -9,6 +9,8 @@ const MAX_PRICE = 10000000;
  * Enquiry / offer document.
  * Many enquiries belong to one listing (Enquiry.listing → Listing._id).
  * A seller can accept, reject, or close an enquiry exactly once.
+ * `buyer` links to the account when the buyer is signed in; guests keep
+ * only the typed buyerEmail.
  */
 const enquirySchema = new Schema(
   {
@@ -16,6 +18,11 @@ const enquirySchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Listing",
       required: [true, "A listing reference is required"],
+    },
+    buyer: {
+      type: Schema.Types.ObjectId,
+      ref: "Seller",
+      default: null,
     },
     buyerName: {
       type: String,
@@ -83,9 +90,10 @@ enquirySchema.pre("validate", async function ensureListingExists() {
   }
 });
 
-/* Indexes for the seller enquiry inbox. */
+/* Indexes for the seller enquiry inbox and the buyer enquiry outbox. */
 enquirySchema.index({ listing: 1, status: 1, createdAt: -1 }, { name: "enquiry_listing_status" });
 enquirySchema.index({ buyerEmail: 1, createdAt: -1 }, { name: "enquiry_buyer_recent" });
+enquirySchema.index({ buyer: 1, createdAt: -1 }, { name: "enquiry_buyer_account_recent" });
 
 export const Enquiry =
   mongoose.models.Enquiry || mongoose.model("Enquiry", enquirySchema);

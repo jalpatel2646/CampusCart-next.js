@@ -9,6 +9,8 @@ import {
 import { ENQUIRY_STATUSES } from "../lib/constants.js";
 import Enquiry from "../models/enquiry.js";
 import Listing from "../models/listing.js";
+import Seller from "../models/seller.js";
+import { createEnquiryResponseNotification } from "./notification.service.js";
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
@@ -34,10 +36,51 @@ function normalizeBuyerEmail(email) {
 }
 
 /**
+ * Links a typed enquiry email to a campus account when one exists.
+ * Guests keep the email only; account-linked enquiries also get notified.
+ * Note: this only creates a readable notification for the recipient account,
+ * so it cannot leak anyone's inbox.
+ */
+async function findBuyerAccount(email) {
+  const normalized = normalizeBuyerEmail(email);
+  if (!normalized) return null;
+  const account = await Seller.findOne({ email: normalized }).select("_id").lean();
+  return account?._id ?? null;
+}
+
+const NOTIFIABLE_STATUSES = ["Accepted", "Rejected", "Closed"];
+
+/**
+ * Creates an enquiry_response notification only when the seller's visible
+ * response actually changed: a new status the buyer cares about, or a new
+ * (different, non-empty) note. Best-effort.
+ */
+async function maybeNotifyAboutChange(enquiry, previousStatus, previousResponse) {
+  if (!enquiry?.buyer) return;
+
+  const currentStatus = enquiry.status;
+  const currentResponse = String(enquiry.sellerResponse ?? "").trim();
+  const lastResponse = String(previousResponse ?? "").trim();
+
+  const statusChanged = currentStatus !== previousStatus;
+  const responseChanged =
+    currentResponse !== lastResponse && currentResponse.length > 0;
+
+  const notifiable =
+    (statusChanged && NOTIFIABLE_STATUSES.includes(currentStatus)) || responseChanged;
+
+  if (!notifiable) return;
+  await createEnquiryResponseNotification(enquiry);
+}
+
+/**
  * Creates an enquiry for an existing, available listing.
  * Sold or deactivated listings stop accepting enquiries (409).
+ * When `accountId` is provided (the signed-in buyer), the enquiry is tied to
+ * their account; otherwise it resolves the typed email to an account if one
+ * exists. Guests still get `buyer: null`.
  */
-export async function createEnquiry(data = {}) {
+export async function createEnquiry(data = {}, { accountId = null } = {}) {
   await connectToDatabase();
 
   const listingId = requireObjectId(data.listing, "listing id");
@@ -65,7 +108,16 @@ export async function createEnquiry(data = {}) {
       delete payload.offerPrice;
     }
 
-    const enquiry = new Enquiry({ ...payload, listing: listingId });
+    const buyerId =
+      accountId && /^[a-f\d]{24}$/i.test(String(accountId))
+        ? String(accountId)
+        : await findBuyerAccount(payload.buyerEmail);
+
+    const enquiry = new Enquiry({
+      ...payload,
+      listing: listingId,
+      buyer: buyerId,
+    });
     await enquiry.save();
     await enquiry.populate(LISTING_POPULATE);
     return enquiry;
@@ -82,6 +134,7 @@ export async function getEnquiries({
   listing,
   listingId,
   sellerId,
+  buyerId,
   buyerEmail,
   status,
   page = 1,
@@ -98,9 +151,11 @@ export async function getEnquiries({
     const seller = requireObjectId(sellerId, "seller id");
     const sellerListings = await Listing.find({ seller }).select("_id").lean();
     filter.listing = { $in: sellerListings.map((item) => item._id) };
+  } else if (buyerId) {
+    filter.buyer = requireObjectId(buyerId, "buyer id");
   } else if (!buyerEmail) {
     throw new ServiceError(
-      "Provide a listing, seller, or buyer email to scope enquiries",
+      "Provide a listing, seller, buyer id or buyer email to scope enquiries",
       { statusCode: 400, code: "MISSING_FILTER" }
     );
   }
@@ -177,10 +232,14 @@ export async function updateEnquiryStatus(id, status, { sellerResponse } = {}) {
     });
   }
 
+  const previousStatus = existing.status;
+  const previousResponse = String(existing.sellerResponse ?? "");
+
   if (existing.status === status) {
     if (sellerResponse !== undefined) {
       existing.sellerResponse = String(sellerResponse).trim();
       await existing.save();
+      await maybeNotifyAboutChange(existing, previousStatus, previousResponse);
     }
     await existing.populate(LISTING_POPULATE);
     return existing;
@@ -211,6 +270,8 @@ export async function updateEnquiryStatus(id, status, { sellerResponse } = {}) {
       { statusCode: 409, code: "CONCURRENT_UPDATE" }
     );
   }
+
+  await maybeNotifyAboutChange(updated, previousStatus, previousResponse);
 
   return updated;
 }
